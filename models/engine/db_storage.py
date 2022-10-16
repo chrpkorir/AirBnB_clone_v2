@@ -1,17 +1,23 @@
 #!/usr/bin/python3
 """ The AirBnB engine."""
-
-from sqlalchemy import create_engine
+from models.base_model import BaseModel, Base
+from sqlalchemy import (create_engine)
 from sqlalchemy.orm import sessionmaker
-import model
-from os import environ, getemv
-from models.base_model import Basemodel, Base
-from models.user import User
-from models.state import State
-from models.city import City
 from models.amenity import Amenity
+from models.city import City
 from models.place import Place
 from model.review import Review
+from models.state import State
+from models.user import User
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
+
+classes = {
+    'BaseModel': BaseModel, 'User': User, 'Place': Place,
+    'State': State, 'City': City, 'Amenity': Amenity,
+    'Review': Review
+}
+
 
 class DBStorage():
     __engine = None
@@ -27,11 +33,12 @@ class DBStorage():
                                           getenv('HBNB_MYSQL_HOST'),
                                           getenv('HBNB_MYSQL_DB'),
                                           pool_pre_ping=True))
-    self.__session = sessionmaker(bind=self.__engine)
+        self.__session = sessionmaker(bind=self.__engine)
         session = self.__session()
         if getenv('HBNB_ENV') == 'test':
             data = session.query().all()
             Base.metadata.drop_all(self.__engine)
+    
     def all(self, cls=None):
         """ this method returns a dictionary """
         my_dict = {}
@@ -46,18 +53,22 @@ class DBStorage():
                 key = "{}.{}".format(obj.name, obj.id)
                 my_dict[key] = obj
         return my_dict
-     def new(self, obj):
+    
+    def new(self, obj):
         """ add the object to the current database session """
-        self.__session.add(obj)
-        self.__commit()
+        if obj:
+            self.__session.add(obj)
+    
     def save(self):
         """ commit all changes of the current database session """
         self.__session.commit()
+
     def delete(self, obj=None):
         """ Deletes the objects from the database """
         if obj:
             stored_obj = self.__session.query(obj).get(obj.id)
             self.__session.delete(stored_obj)
+    
     def reload(self):
         """ reloads a table from the database """
         Base.metadata.create_all(self.__engine)
