@@ -9,6 +9,7 @@ from models.place import Place
 from model.review import Review
 from models.state import State
 from models.user import User
+from os import getenv
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 
