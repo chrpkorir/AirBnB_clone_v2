@@ -118,13 +118,39 @@ class HBNBCommand(cmd.Cmd):
         if not args:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
+        elements = args.split(" ")
+        if elements not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
+        new_instance = HBNBCommand.classes[elements[0]]()
+        for arg in elements[1:]:
+            flag = 0
+            # State name="California" -> Clase key="value"
+            key = arg.split("=")[0]
+            value = arg.split("=")[1]
+            if value[0] == '"' and value[-1] == '"':
+                for i in range(1, len(value) - 2):
+                    if i == len(value) - 3:
+                        break
+                    if value[i + 1] == '"' and value[i] != "\\":
+                        flag = 1
+                        break
+                if flag == 1:
+                    continue
+                value = value.replace("_", " ")
+                value = value[1:-1]
+            else:
+                try:
+                    value = int(value)
+                except:
+                    try:
+                        value = float(value)
+                    except:
+                        continue
+            setattr(new_instance, key, value)
+        new_instance.save()
         print(new_instance.id)
-        storage.save()
+        
 
     def help_create(self):
         """ Help information for the create method """
